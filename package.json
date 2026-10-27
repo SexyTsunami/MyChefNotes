@@ -1,0 +1,13 @@
+{
+  "name": "my-chef-notes",
+  "private": true,
+  "description": "MyChefNotes, a phone-friendly recipe book. Local markdown files, or Supabase when deployed to Vercel.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node public/recipe-format.js",
+    "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
