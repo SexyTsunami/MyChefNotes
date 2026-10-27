@@ -79,7 +79,7 @@ function recipeBySlug(slug) {
 function blankDraft() {
   return {
     title: "", time: "", temp: "", servings: "", source: "", from: "", tags: "",
-    ingredients: [], optional: [], steps: [], notes: "", details: "", full: "", original: "",
+    ingredients: [], optional: [], steps: [], notes: "", details: "", full: "", original: "", favorite: false,
   };
 }
 
@@ -92,6 +92,7 @@ function keptFields(found) {
     optional: source.optional ? source.optional.slice() : [],
     full: source.full || "",
     original: source.original || "",
+    favorite: Boolean(source.favorite),
   };
 }
 
@@ -230,12 +231,20 @@ function paintList() {
   results.innerHTML = filtered.results.map((recipe) => {
     const meta = [recipe.time, recipe.temp].filter(Boolean).join(" · ");
     const active = route.slug === recipe.slug ? " active" : "";
-    return `<button type="button" class="recipe-link${active}" data-action="open" data-slug="${esc(recipe.slug)}" ${active ? 'aria-current="true"' : ""}>
-      <h2>${highlight(recipe.title, terms)}</h2>
-      ${meta ? `<p>${esc(meta)}</p>` : ""}
-      <p class="terms">${highlight(termLine(recipe), terms)}</p>
-    </button>`;
+    return `<div class="recipe-row${active}">
+      ${starButton(recipe)}
+      <button type="button" class="recipe-link" data-action="open" data-slug="${esc(recipe.slug)}" ${active ? 'aria-current="true"' : ""}>
+        <h2>${highlight(recipe.title, terms)}</h2>
+        ${meta ? `<p>${esc(meta)}</p>` : ""}
+        <p class="terms">${highlight(termLine(recipe), terms)}</p>
+      </button>
+    </div>`;
   }).join("");
+}
+
+function starButton(recipe) {
+  const on = Boolean(recipe.favorite);
+  return `<button type="button" class="star${on ? " on" : ""}" data-action="favorite" data-slug="${esc(recipe.slug)}" aria-pressed="${on ? "true" : "false"}" aria-label="${on ? "Remove from favorites" : "Favorite"}">${on ? "★" : "☆"}</button>`;
 }
 
 function allStepsHtml(steps) {
@@ -314,6 +323,7 @@ function recipeHtml(recipe) {
     <header class="bar pad">
       <button class="back" type="button" data-action="home" aria-label="Back to recipes">←</button>
       <h1 class="recipe-title">${esc(recipe.title)}</h1>
+      ${starButton(recipe)}
       <button class="text-btn" type="button" data-action="edit" data-slug="${esc(recipe.slug)}">Edit</button>
     </header>
     ${meta.length ? `<div class="meta pad">${meta.map(([label, value, grow]) => `<span class="${grow ? "grow" : ""}"><small>${label}</small><strong>${esc(value)}</strong></span>`).join("")}</div>` : ""}
@@ -500,7 +510,7 @@ async function addFromLink(event) {
   if (!url) return;
   const button = event.target.querySelector("button");
   button.disabled = true;
-  button.textContent = "Adding";
+  button.textContent = "Reading";
   try {
     const response = await apiFetch("/api/import", {
       method: "POST",
@@ -530,7 +540,7 @@ async function copyFromLink() {
   if ((state.fieldsDirty || state.mdDirty) && state.draft && state.draft.title) {
     if (!confirm("Replace the open recipe with the ingredients from this link?")) return;
   }
-  setStatus("Reading the page…");
+  setStatus("Reading the page. If a browser window opens, finish the check there.");
   try {
     const response = await apiFetch("/api/import", {
       method: "POST",
@@ -615,6 +625,38 @@ async function deleteRecipe(slug) {
   }
 }
 
+async function toggleFavorite(slug) {
+  const recipe = recipeBySlug(slug);
+  if (!recipe) return;
+  const favorite = !recipe.favorite;
+  const next = { ...recipe, favorite };
+  next.markdown = RecipeFormat.toMarkdown(next);
+  recipe.favorite = favorite;
+  recipe.markdown = next.markdown;
+  if (state.draft && state.editKey === slug) state.draft.favorite = favorite;
+  render();
+  try {
+    const response = await apiFetch(`/api/recipes/${encodeURIComponent(slug)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markdown: next.markdown }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not save the favorite.");
+    const index = state.recipes.findIndex((item) => item.slug === slug);
+    if (index >= 0) state.recipes[index] = data;
+    if (state.draft && state.editKey === slug) state.draft.favorite = Boolean(data.favorite);
+    render();
+  } catch (error) {
+    if (error.locked) return;
+    const current = recipeBySlug(slug);
+    if (current) current.favorite = !favorite;
+    if (state.draft && state.editKey === slug) state.draft.favorite = !favorite;
+    render();
+    toast("Could not save the favorite.");
+  }
+}
+
 function onClick(event) {
   const target = event.target.closest("[data-action]");
   if (!target) return;
@@ -627,6 +669,7 @@ function onClick(event) {
     state.editKey = null;
     go("#/new");
   } else if (action === "open") go(`#/recipe/${encodeURIComponent(target.dataset.slug)}`);
+  else if (action === "favorite") toggleFavorite(target.dataset.slug);
   else if (action === "edit") go(`#/edit/${encodeURIComponent(target.dataset.slug)}`);
   else if (action === "check") {
     const set = checkedSet(target.dataset.slug);

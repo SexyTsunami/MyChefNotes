@@ -138,14 +138,35 @@ input:focus, textarea:focus { border-color: var(--tomato); outline: none; }
   overflow: auto;
   overscroll-behavior: contain;
 }
+.recipe-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+}
+.recipe-row.active {
+  background: #f8e8df;
+  box-shadow: inset 3px 0 0 var(--tomato);
+}
+.star {
+  flex: none;
+  width: 2.75rem;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  color: #b7a89b;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+.star.on { color: var(--tomato); }
 .recipe-link {
   display: block;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   text-align: left;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  padding: 0.8rem 0.15rem 0.75rem;
+  padding: 0.8rem 0.15rem 0.75rem 0;
 }
 .recipe-link h2 {
   margin: 0 0 0.12rem;
@@ -161,10 +182,7 @@ input:focus, textarea:focus { border-color: var(--tomato); outline: none; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.recipe-link.active {
-  background: #f8e8df;
-  box-shadow: inset 3px 0 0 var(--tomato);
-}
+.recipe-link.active { background: transparent; }
 .empty-list { color: var(--muted); padding: 0.4rem 0.15rem 1rem; margin: 0; }
 mark { background: var(--mark); color: inherit; border-radius: 0.15em; padding: 0 0.08em; }
 
@@ -389,7 +407,8 @@ mark { background: var(--mark); color: inherit; border-radius: 0.15em; padding: 
 }
 
 @media (hover: hover) {
-  .recipe-link:hover { background: #f7f1e8; }
+  .recipe-row:hover { background: #f7f1e8; }
+  .recipe-row.active:hover { background: #f8e8df; }
   .ing-item:hover { background: rgba(255, 255, 255, 0.45); }
 }
 @media (min-width: 860px) {

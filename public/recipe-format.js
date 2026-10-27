@@ -105,6 +105,10 @@ function canonWord(word) {
     }, 0);
   }
 
+  function favoriteFirst(a, b) {
+    return Number(Boolean(b && b.favorite)) - Number(Boolean(a && a.favorite));
+  }
+
   function filterRecipes(recipes, query) {
     const text = fold(query && query.q).trim();
     let list = recipes.slice();
@@ -118,7 +122,7 @@ function canonWord(word) {
     }
     const queries = parseFridge(query && query.fridge);
     if (!queries.length) {
-      list.sort((a, b) => a.title.localeCompare(b.title));
+      list.sort((a, b) => favoriteFirst(a, b) || a.title.localeCompare(b.title));
       return { results: list, partial: false, queries: [] };
     }
     const scored = list
@@ -126,7 +130,7 @@ function canonWord(word) {
       .filter((item) => item.score > 0);
     const full = scored.filter((item) => item.score === queries.length);
     const chosen = full.length ? full : scored;
-    chosen.sort((a, b) => b.score - a.score || a.recipe.ingredients.length - b.recipe.ingredients.length || a.recipe.title.localeCompare(b.recipe.title));
+    chosen.sort((a, b) => favoriteFirst(a.recipe, b.recipe) || b.score - a.score || a.recipe.ingredients.length - b.recipe.ingredients.length || a.recipe.title.localeCompare(b.recipe.title));
     return {
       results: chosen.map((item) => item.recipe),
       partial: full.length === 0 && chosen.length > 0,
@@ -164,7 +168,7 @@ function canonWord(word) {
 
   function parseMarkdown(markdown) {
     const text = String(markdown || "").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
-    const meta = { time: "", temp: "", servings: "", source: "", from: "", tags: "" };
+    const meta = { time: "", temp: "", servings: "", source: "", from: "", tags: "", favorite: "" };
     let body = text;
     const front = text.match(/^---\n([\s\S]*?)\n---\n?/);
     if (front) {
@@ -238,6 +242,7 @@ function canonWord(word) {
       details: details.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
       full: full.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
       original: original.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
+      favorite: /^(1|true|yes)$/i.test(meta.favorite),
     };
     recipe.parsedIngredients = recipe.ingredients.concat(recipe.optional).map(normalizeIngredient);
     return recipe;
@@ -251,6 +256,7 @@ function canonWord(word) {
     if (recipe.from) lines.push(`from: ${yamlQuote(recipe.from)}`);
     if (recipe.tags) lines.push(`tags: ${yamlQuote(recipe.tags)}`);
     if (recipe.source) lines.push(`source: ${yamlQuote(recipe.source)}`);
+    if (recipe.favorite) lines.push("favorite: yes");
     lines.push("---", "", `# ${String(recipe.title || "Untitled").trim()}`, "");
     if (String(recipe.details || "").trim()) lines.push("## Details", "", String(recipe.details).trim(), "");
     lines.push("## Ingredients", "");
@@ -522,6 +528,10 @@ function uniqueLines(lines) {
     check(partial.partial === true && partial.results.every((recipe) => /shrimp/i.test(recipe.ingredients.join(" "))), "partial fridge matches");
     const named = filterRecipes(library, { q: "omelette" });
     check(named.results.length === 1, "name search");
+    library[3].favorite = true;
+    const topped = filterRecipes(library, {});
+    check(topped.results[0].title === "Roast Chicken Thighs", "favorites sort first");
+    library[3].favorite = false;
 
     const round = parseMarkdown(toMarkdown({
       title: "Garlic Shrimp",
@@ -538,6 +548,9 @@ function uniqueLines(lines) {
     check(round.temp === "medium-high", "round trip temp");
     check(round.source === "https://example.com/garlic:shrimp", "round trip source");
     check(round.ingredients.length === 2 && round.steps.length === 1 && round.notes === "Serve hot.", "round trip body");
+    check(round.favorite === false, "round trip favorite defaults off");
+    const starred = parseMarkdown(toMarkdown({ title: "Starred", ingredients: ["1 egg"], steps: ["Cook."], favorite: true }));
+    check(starred.favorite === true, "round trip favorite");
 
     const folded = parseMarkdown(toMarkdown({
       title: "A Magical Peanut Sauce",

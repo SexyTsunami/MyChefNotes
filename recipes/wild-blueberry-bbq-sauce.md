@@ -33,10 +33,10 @@ Store: Allow to cool and transfer to a squeeze bottle or jar with a lid and keep
 
 ## Original
 
-**From:** We Fancy
+From: We Fancy
 
-**Makes about 1 cup**  
-**(DF, EF, GF, NF, S30)**
+Makes about 1 cup
+(DF, EF, GF, NF, S30)
 
 ## Ingredients
 
@@ -52,8 +52,8 @@ Store: Allow to cool and transfer to a squeeze bottle or jar with a lid and keep
 
 ## Instructions
 
-**Cook the sauce:** In a medium saucepan, combine the blueberries, brown sugar, tomato paste, ginger, mustard, salt, black pepper, garlic powder, vinegar, and 1/2 cup water. Cook for 15 to 20 minutes over medium heat until thick, stirring occasionally.
+Cook the sauce: In a medium saucepan, combine the blueberries, brown sugar, tomato paste, ginger, mustard, salt, black pepper, garlic powder, vinegar, and 1/2 cup water. Cook for 15 to 20 minutes over medium heat until thick, stirring occasionally.
 
-**Puree:** Remove the pan from the heat and, using an immersion blender, puree the sauce until completely smooth. Alternatively, you can puree the sauce in a blender or food processor, placing a clean dish towel over the lid to prevent hot liquid from splattering.
+Puree: Remove the pan from the heat and, using an immersion blender, puree the sauce until completely smooth. Alternatively, you can puree the sauce in a blender or food processor, placing a clean dish towel over the lid to prevent hot liquid from splattering.
 
-**Store:** Allow to cool and transfer to a squeeze bottle or jar with a lid and keep refrigerated for up to 3 weeks.
+Store: Allow to cool and transfer to a squeeze bottle or jar with a lid and keep refrigerated for up to 3 weeks.
