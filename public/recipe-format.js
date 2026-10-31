@@ -115,7 +115,7 @@ function canonWord(word) {
     if (text) {
       list = list.filter((recipe) => {
         const hay = fold(
-          [recipe.title, recipe.time, recipe.temp, recipe.notes, ...(recipe.ingredients || []), ...(recipe.steps || [])].join("\n")
+          [recipe.title, recipe.from, recipe.tags, recipe.source, recipe.time, recipe.temp, recipe.notes, ...(recipe.ingredients || []), ...(recipe.steps || [])].join("\n")
         );
         return hay.includes(text);
       });
@@ -528,6 +528,16 @@ function uniqueLines(lines) {
     check(partial.partial === true && partial.results.every((recipe) => /shrimp/i.test(recipe.ingredients.join(" "))), "partial fridge matches");
     const named = filterRecipes(library, { q: "omelette" });
     check(named.results.length === 1, "name search");
+    const tagged = filterRecipes([
+      { title: "Peanut Sauce", from: "We Fancy", tags: "DF, GF", ingredients: ["peanut butter"], steps: [] },
+      { title: "Weeknight Beans", from: "Home", tags: "V", ingredients: ["beans"], steps: [] },
+    ], { q: "we fancy" });
+    check(tagged.results.length === 1 && tagged.results[0].title === "Peanut Sauce", "search source tag");
+    const diet = filterRecipes([
+      { title: "Peanut Sauce", from: "We Fancy", tags: "DF, GF", ingredients: ["peanut butter"], steps: [] },
+      { title: "Weeknight Beans", from: "Home", tags: "V", ingredients: ["beans"], steps: [] },
+    ], { q: "gf" });
+    check(diet.results.length === 1 && diet.results[0].title === "Peanut Sauce", "search diet tag");
     library[3].favorite = true;
     const topped = filterRecipes(library, {});
     check(topped.results[0].title === "Roast Chicken Thighs", "favorites sort first");

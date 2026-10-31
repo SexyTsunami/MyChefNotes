@@ -192,7 +192,7 @@ function shell(route) {
         </header>
         <div class="pad">
           <label class="lbl" for="q">Search</label>
-          <input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="garlic shrimp" value="${esc(state.q)}">
+          <input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="we fancy, garlic, GF" value="${esc(state.q)}">
           <label class="lbl" for="fridge">In the fridge</label>
           <input id="fridge" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="tomatoes, egg, shrimp" value="${esc(state.fridge)}">
           <form id="quick-add">
@@ -229,13 +229,13 @@ function paintList() {
     return;
   }
   results.innerHTML = filtered.results.map((recipe) => {
-    const meta = [recipe.time, recipe.temp].filter(Boolean).join(" · ");
+    const meta = [recipe.from, recipe.tags, recipe.time, recipe.temp].filter(Boolean).join(" · ");
     const active = route.slug === recipe.slug ? " active" : "";
     return `<div class="recipe-row${active}">
       ${starButton(recipe)}
       <button type="button" class="recipe-link" data-action="open" data-slug="${esc(recipe.slug)}" ${active ? 'aria-current="true"' : ""}>
         <h2>${highlight(recipe.title, terms)}</h2>
-        ${meta ? `<p>${esc(meta)}</p>` : ""}
+        ${meta ? `<p>${highlight(meta, terms)}</p>` : ""}
         <p class="terms">${highlight(termLine(recipe), terms)}</p>
       </button>
     </div>`;
